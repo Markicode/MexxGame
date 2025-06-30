@@ -2,7 +2,9 @@ var numberOfPlayers;
 var input;
 var players = [];
 var scoresDictionary = new Map();
+//var scoresDictionaryReversed = new Map();
 var clicked;
+var playerView = "";
 
 var startButton = document.querySelector("#startButton");
 var playersField = document.querySelector(".players");
@@ -36,12 +38,10 @@ function initiate()
 
 function main()
 {
-    var playerView = "";
-
     for(var i = 0; i < players.length; i++)
     {
         playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div>:</div><div id=\"player" + (i+1) + "Score\">0</div></div>";
-        scoresDictionary.set("player" + (i+1), 0)
+        scoresDictionary.set("player" + (i+1), 0);
     }
 
     playersField.innerHTML = playerView;
@@ -76,30 +76,109 @@ function validateNumberOfPlayers(input)
 
 async function startRound(player)
 {
+    // Determine at which player the function start to iterate ( is the person that lost the last round).
+    // For example: if player 3 loses, iterate over players 3 till the end of the playerlist.
     var startingPlayerIndex = getPlayerNumber(player);
-    for(var i = startingPlayerIndex; i <= players.length; i++)
+    for(var i = startingPlayerIndex; i <= players.length; i++) 
     {
-        document.querySelector("#player" + i + "Score").innerHTML = "<button id=\"player" + i + "Button\">Throw</button>";
-        document.querySelector("#player" + i + "Button").addEventListener("click", function () {
-            var playerscore = rollDice();
-            scoresDictionary["player" + i] = playerscore;
-        });
-        await waitForButtonClick("#player" + i + "Button");
-        document.querySelector("#player" + i + "Score").innerHTML = scoresDictionary["player" + i];
+        await playerThrow(i);
+    }
+    // Finish iterating over the players from player 1 till the player that lost. 
+    for(var i = 1; i < startingPlayerIndex; i++)
+    {
+        await playerThrow(i);
+    }
+
+    var lowestScores = determineLowestScore();
+
+    if(lowestScores.length === 1)
+    {
+        playerDrink(lowestScores[0]);  
+    }
+
+    for(var i = 0; i < lowestScores.length; i++)
+    {
+        var number = getPlayerNumber(lowestScores[i]);
+        document.querySelector("#player" + number + "Score").classList.add("lowest-score");
     }
 }
 
-function assignScore(player)
+function playerDrink(player)
+{
+    playerView = "";
+    var number = getPlayerNumber(player);
+    var playerScoreField = document.querySelector("#player" + number + "Score");
+    playerScoreField.classList.add("lowest-score");
+    playerScoreField.innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink</button>" + playerScoreField.innerHTML;
+        document.querySelector("#player" + number + "DrinkButton").addEventListener("click", function () {
+            for(var i = 0; i < players.length; i++)
+            {
+                playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div>:</div><div id=\"player" + (i+1) + "Score\">0</div></div>";
+                playersField.innerHTML = playerView;
+                scoresDictionary.set("player" + (i+1), 0);
+            }
+            startRound(player);
+        });
+}
+
+async function playerThrow(number)
+{
+    document.querySelector("#player" + number + "Score").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
+        document.querySelector("#player" + number + "Button").addEventListener("click", function () {
+            var playerscore = rollDice();
+            scoresDictionary["player" + number] = playerscore;
+        });
+        await waitForButtonClick("#player" + number + "Button");
+        document.querySelector("#player" + number + "Score").innerHTML = scoresDictionary["player" + number];
+}
+
+async function startAdditionalRound(lowestScores)
+{
+
+}
+
+function determineLowestScore()
+{
+    var minimum;
+    var lowestScores = [];
+    for(var i = 0; i < scoresDictionary.size; i ++)
+    {
+        if(i === 0)
+        {
+            minimum = scoresDictionary["player" + (i+1)];
+        }
+        else
+        {
+            if(scoresDictionary["player" + (i+1)] < minimum)
+            {
+                minimum = scoresDictionary["player" + (i+1)];
+            }
+        }
+    }
+
+    for(var i = 0; i < scoresDictionary.size; i ++)
+    {
+        if(scoresDictionary["player" + (i+1)] === minimum)
+        {
+            lowestScores.push("player" + (i+1));
+        }
+    }
+
+    return lowestScores;
+
+}
+
+function getKeyByValue(map, searchValue)
 {
 
 }
 
 async function waitForButtonClick(playerButton) {
-  const div = document.querySelector(".title");
+  //const div = document.querySelector(".title");
   const button = document.querySelector(playerButton);
-  div.innerText = "Waiting for you to press the button";
+  //div.innerText = "Waiting for you to press the button";
   await getPromiseFromEvent(button, "click");
-  div.innerText = "The button was pressed!";
+  //div.innerText = "The button was pressed!";
 }
 
 function getPlayerNumber(player)
