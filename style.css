@@ -1,5 +1,6 @@
 body {
     background-image:url("./assets/images/casino-bg.jpg");
+    background-attachment: fixed;
     font-family: "Archivo";
     color: white;
 }

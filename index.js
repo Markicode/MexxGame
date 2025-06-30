@@ -5,7 +5,7 @@ var scoresDictionary = new Map();
 //var scoresDictionaryReversed = new Map();
 var clicked;
 var playerView = "";
-var throwIsDone = true;
+var roundFinished = false;
 var startingPlayerIndex;
 
 var startButton = document.querySelector("#startButton");
@@ -42,7 +42,7 @@ function main()
 {
     for(var i = 0; i < players.length; i++)
     {
-        playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div>:</div><div id=\"player" + (i+1) + "Score\">0</div></div>";
+        playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div id=\"player" + (i+1) + "Button\"></div><div id=\"player" + (i+1) + "Score\">0</div></div>";
         scoresDictionary.set("player" + (i+1), 0);
     }
 
@@ -80,6 +80,7 @@ async function startRound(player)
 {
     // Determine at which player the function start to iterate ( is the person that lost the last round).
     // For example: if player 3 loses, iterate over players 3 till the end of the playerlist.
+    //roundFinished = false;
     startingPlayerIndex = getPlayerNumber(player);
     for(var i = startingPlayerIndex; i <= players.length; i++) 
     {
@@ -91,49 +92,111 @@ async function startRound(player)
         await playerThrow(i);
     }
 
+    
     var lowestScores = determineLowestScore();
 
-    if(lowestScores.length === 1)
-    {
-        playerDrink(lowestScores[0]);  
-    }
+    //while(roundFinished === false)
+    //{
 
     for(var i = 0; i < lowestScores.length; i++)
     {
         var number = getPlayerNumber(lowestScores[i]);
         document.querySelector("#player" + number + "Score").classList.add("lowest-score");
     }
-}
+
+    
+
+    if(lowestScores.length === 1)
+    {
+        playerDrink(lowestScores[0]); 
+        //roundFinished = true; 
+    }
+    if(lowestScores.length > 1)
+    {
+        var playersToRethrow = [];
+        for(var i = 1; i <= players.length; i++) 
+        {
+            if(lowestScores.includes("player" + i))
+            {
+                playersToRethrow.push("player" + i);
+                scoresDictionary["player" + i] = 0;
+            }
+            else
+            {
+                scoresDictionary["player" + i] = 1000;
+            }
+        }
+            
+        
+    // Finish iterating over the players from player 1 till the player that lost. 
+        /*for(var i = 1; i <= startingPlayerIndex; i++) 
+        {
+            for(var j = 0; j < lowestScores.length; j++)
+            {
+                if(lowestScores.includes("player" + i))
+                {
+                    playersToRethrow.push("player" + i);
+                    scoresDictionary["player" + i] = 0;
+                }
+                else
+                {
+                    scoresDictionary["player" + i] = 1000;
+                }
+            }
+            
+        }*/
+
+        for(var i = 1; i <= playersToRethrow.length; i++) 
+        {
+            var number = getPlayerNumber(playersToRethrow[i]);
+            document.querySelector("#player" + number + "Score").classList.remove("lowest-score");
+            await playerThrow(number);
+        }
+
+
+        lowestScores = determineLowestScore();
+    }
+
+
+}   
+
 
 function playerDrink(player)
 {
+    return new Promise(resolve => {
     playerView = "";
     var number = getPlayerNumber(player);
     var playerScoreField = document.querySelector("#player" + number + "Score");
-    playerScoreField.classList.add("lowest-score");
-    playerScoreField.innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink</button>" + playerScoreField.innerHTML;
-        document.querySelector("#player" + number + "DrinkButton").addEventListener("click", function () {
+    //playerScoreField.classList.add("lowest-score");
+    document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink</button>";
+        document.querySelector("#player" + number + "DrinkButton").addEventListener("click", function drinkHandler () {
+            document.querySelector("#player" + number + "DrinkButton").removeEventListener("click", drinkHandler);
             for(var i = 0; i < players.length; i++)
             {
-                playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div>:</div><div id=\"player" + (i+1) + "Score\">0</div></div>";
+                playerView += "<div class=\"player\"><div id=\"player" + (i+1) + "name\">" + players[i] + "</div><div id=\"player" + (i+1) + "Button\"></div><div id=\"player" + (i+1) + "Score\">0</div></div>";
                 playersField.innerHTML = playerView;
                 scoresDictionary.set("player" + (i+1), 0);
             }
+            resolve();
             startRound(player);
         });
+
+    });
 }
 
 async function playerThrow(number)
 {
     return new Promise(resolve => {
-        document.querySelector("#player" + number + "Score").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
-        document.querySelector("#player" + number + "Button").addEventListener("click", async function () {
-        document.querySelector("#player" + number + "Score").innerHTML = "throwing..";
+        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
+        document.querySelector("#player" + number + "Button").addEventListener("click", async function throwHandler() {
+        document.querySelector("#player" + number + "Button").innerHTML = "throwing..";
         var diceThrown = await Promise.all([throwDiceSequence(1), throwDiceSequence(2)]);
+        document.querySelector("#player" + number + "Button").innerHTML = "";
         var playerscore = calculateScore(diceThrown);
         scoresDictionary["player" + number] = playerscore;
         document.querySelector("#player" + number + "Score").innerHTML = scoresDictionary["player" + number];
         //await waitForButtonClick("#player" + number + "Button");
+        document.querySelector("#player" + number + "Button").removeEventListener("click", throwHandler); 
         resolve();
         });
         
@@ -222,7 +285,7 @@ function calculateScore(diceScores)
 
 function rollDie()
 {
-    var singleScore = Math.floor(Math.random() * 6) + 1;
+    var singleScore = Math.floor(Math.random() * 3) + 1;
     return singleScore;
 }
 
