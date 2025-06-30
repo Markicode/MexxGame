@@ -5,6 +5,8 @@ var scoresDictionary = new Map();
 //var scoresDictionaryReversed = new Map();
 var clicked;
 var playerView = "";
+var throwIsDone = true;
+var startingPlayerIndex;
 
 var startButton = document.querySelector("#startButton");
 var playersField = document.querySelector(".players");
@@ -17,8 +19,8 @@ function initiate()
     while(players.length > 0)
     {
         players.pop();
-        // TODO: delete dictionary
     }
+    scoresDictionary.clear();
 
     input = prompt("Enter number of players(2-8):");
     if(validateNumberOfPlayers(input))
@@ -78,7 +80,7 @@ async function startRound(player)
 {
     // Determine at which player the function start to iterate ( is the person that lost the last round).
     // For example: if player 3 loses, iterate over players 3 till the end of the playerlist.
-    var startingPlayerIndex = getPlayerNumber(player);
+    startingPlayerIndex = getPlayerNumber(player);
     for(var i = startingPlayerIndex; i <= players.length; i++) 
     {
         await playerThrow(i);
@@ -123,13 +125,22 @@ function playerDrink(player)
 
 async function playerThrow(number)
 {
-    document.querySelector("#player" + number + "Score").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
-        document.querySelector("#player" + number + "Button").addEventListener("click", function () {
-            var playerscore = rollDice();
-            scoresDictionary["player" + number] = playerscore;
-        });
-        await waitForButtonClick("#player" + number + "Button");
+    return new Promise(resolve => {
+        document.querySelector("#player" + number + "Score").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
+        document.querySelector("#player" + number + "Button").addEventListener("click", async function () {
+        document.querySelector("#player" + number + "Score").innerHTML = "throwing..";
+        var diceThrown = await Promise.all([throwDiceSequence(1), throwDiceSequence(2)]);
+        var playerscore = calculateScore(diceThrown);
+        scoresDictionary["player" + number] = playerscore;
         document.querySelector("#player" + number + "Score").innerHTML = scoresDictionary["player" + number];
+        //await waitForButtonClick("#player" + number + "Button");
+        resolve();
+        });
+        
+        
+    });
+        
+        
 }
 
 async function startAdditionalRound(lowestScores)
@@ -187,12 +198,10 @@ function getPlayerNumber(player)
     return number;
 }
 
-function rollDice()
+function calculateScore(diceScores)
 {
-    var die1 = parseInt(rollDie());
-    adjustDieFace(1, die1);
-    var die2 = parseInt(rollDie());
-    adjustDieFace(2, die2);
+    var die1 = diceScores[0];
+    var die2 = diceScores[1];
     var score;
 
     if(die1 > die2)
@@ -231,4 +240,22 @@ function getPromiseFromEvent(item, event) {
     }
     item.addEventListener(event, listener);
   })
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function throwDiceSequence(die)
+{
+    var numberOfRolls = Math.floor((Math.random() * 7) + 3);
+    var numberThrown;
+    for(var i = 0; i < numberOfRolls; i++)
+    {
+        numberThrown = rollDie();
+        adjustDieFace(die, numberThrown);
+        await sleep(i * 100);
+    }
+
+    return numberThrown;
 }
