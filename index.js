@@ -1,12 +1,13 @@
+// Global variables declaration.
 var numberOfPlayers; 
 var input;
 var players = [];
 var scoresDictionary = new Map();
-//var scoresDictionaryReversed = new Map();
 var clicked;
 var playerView = "";
 var roundFinished = false;
 var startingPlayerIndex;
+var multiplier;
 
 var startButton = document.querySelector("#startButton");
 var playersField = document.querySelector(".players");
@@ -14,14 +15,18 @@ startButton.addEventListener("click", initiate);
 
 function initiate()
 {
+    // Clear the content if  game was previously played.
     numberOfPlayers = 0;
     playersField.innerHTML = "";
+    playerView = "";
+
     while(players.length > 0)
     {
         players.pop();
     }
     scoresDictionary.clear();
 
+    // Ask user for player information and validate the value of the number of players inserted.
     input = prompt("Enter number of players(2-8):");
     if(validateNumberOfPlayers(input))
     {
@@ -78,9 +83,6 @@ function validateNumberOfPlayers(input)
 
 async function startRound(player)
 {
-    // Determine at which player the function start to iterate ( is the person that lost the last round).
-    // For example: if player 3 loses, iterate over players 3 till the end of the playerlist.
-    //roundFinished = false;
     for(var i = 1; i <= players.length; i++)
     {
         if(document.querySelector("#player" + i + "Score").classList.contains("lowest-score"))
@@ -89,13 +91,15 @@ async function startRound(player)
         }
     }
 
+    document.querySelector("h1").innerHTML = "Time to play Mexx!";
+    multiplier = 0;
     roundFinished = false;
     startingPlayerIndex = getPlayerNumber(player);
     for(var i = startingPlayerIndex; i <= players.length; i++) 
     {
         await playerThrow(i);
     }
-    // Finish iterating over the players from player 1 till the player that lost. 
+
     for(var i = 1; i < startingPlayerIndex; i++)
     {
         await playerThrow(i);
@@ -163,8 +167,6 @@ async function startRound(player)
             await playerThrow(number);
         }
 
-
-
         lowestScores = determineLowestScore();
     }
     }
@@ -178,8 +180,14 @@ function playerDrink(player)
     playerView = "";
     var number = getPlayerNumber(player);
     var playerScoreField = document.querySelector("#player" + number + "Score");
-    //playerScoreField.classList.add("lowest-score");
-    document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink</button>";
+    if(multiplier === 0)
+    {
+        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink!</button>";
+    }
+    else
+    {
+        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink " + multiplier + " Times!</button>";
+    }
         document.querySelector("#player" + number + "DrinkButton").addEventListener("click", function drinkHandler () {
             document.querySelector("#player" + number + "DrinkButton").removeEventListener("click", drinkHandler);
             for(var i = 0; i < players.length; i++)
@@ -205,6 +213,19 @@ async function playerThrow(number)
         document.querySelector("#player" + number + "Button").innerHTML = "";
         var playerscore = calculateScore(diceThrown);
         scoresDictionary["player" + number] = playerscore;
+        if(playerscore === 21)
+        {
+            if(multiplier === 0)
+            {
+                multiplier = 2;
+            }
+            else
+            {
+                multiplier *= 2;
+            }
+
+            document.querySelector("h1").innerHTML = "Current Multiplier: " + multiplier;
+        }
         document.querySelector("#player" + number + "Score").innerHTML = scoresDictionary["player" + number];
         //await waitForButtonClick("#player" + number + "Button");
         document.querySelector("#player" + number + "Button").removeEventListener("click", throwHandler); 
@@ -224,28 +245,28 @@ async function startAdditionalRound(lowestScores)
 
 function determineLowestScore()
 {
-    var minimum;
+    var minimum = 0;
     var lowestScores = [];
-    for(var i = 0; i < scoresDictionary.size; i ++)
+    for(var i = 1; i <= scoresDictionary.size; i ++)
     {
-        if(i === 0)
+        if(minimum === 0 && scoresDictionary["player" + i] > 21)
         {
-            minimum = scoresDictionary["player" + (i+1)];
+            minimum = scoresDictionary["player" + i];
         }
         else
         {
-            if(scoresDictionary["player" + (i+1)] < minimum)
+            if(scoresDictionary["player" + i] < minimum && scoresDictionary["player" + i] > 21)
             {
-                minimum = scoresDictionary["player" + (i+1)];
+                minimum = scoresDictionary["player" + i];
             }
         }
     }
 
-    for(var i = 0; i < scoresDictionary.size; i ++)
+    for(var i = 1; i <= scoresDictionary.size; i ++)
     {
-        if(scoresDictionary["player" + (i+1)] === minimum)
+        if(scoresDictionary["player" + i] === minimum)
         {
-            lowestScores.push("player" + (i+1));
+            lowestScores.push("player" + i);
         }
     }
 
