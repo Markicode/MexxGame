@@ -81,6 +81,15 @@ async function startRound(player)
     // Determine at which player the function start to iterate ( is the person that lost the last round).
     // For example: if player 3 loses, iterate over players 3 till the end of the playerlist.
     //roundFinished = false;
+    for(var i = 1; i <= players.length; i++)
+    {
+        if(document.querySelector("#player" + i + "Score").classList.contains("lowest-score"))
+        {   
+            document.querySelector("#player" + i + "Score").classList.remove("lowest-score");
+        }
+    }
+
+    roundFinished = false;
     startingPlayerIndex = getPlayerNumber(player);
     for(var i = startingPlayerIndex; i <= players.length; i++) 
     {
@@ -95,8 +104,16 @@ async function startRound(player)
     
     var lowestScores = determineLowestScore();
 
-    //while(roundFinished === false)
-    //{
+    while(roundFinished === false)
+    {
+
+    for(var i = 1; i <= players.length; i++)
+    {
+        if(document.querySelector("#player" + i + "Score").classList.contains("lowest-score"))
+        {   
+            document.querySelector("#player" + i + "Score").classList.remove("lowest-score");
+        }
+    }
 
     for(var i = 0; i < lowestScores.length; i++)
     {
@@ -109,12 +126,12 @@ async function startRound(player)
     if(lowestScores.length === 1)
     {
         playerDrink(lowestScores[0]); 
-        //roundFinished = true; 
+        roundFinished = true; 
     }
     if(lowestScores.length > 1)
     {
         var playersToRethrow = [];
-        for(var i = 1; i <= players.length; i++) 
+        for(var i = startingPlayerIndex; i <= players.length; i++) 
         {
             if(lowestScores.includes("player" + i))
             {
@@ -126,37 +143,31 @@ async function startRound(player)
                 scoresDictionary["player" + i] = 1000;
             }
         }
-            
-        
-    // Finish iterating over the players from player 1 till the player that lost. 
-        /*for(var i = 1; i <= startingPlayerIndex; i++) 
-        {
-            for(var j = 0; j < lowestScores.length; j++)
-            {
-                if(lowestScores.includes("player" + i))
-                {
-                    playersToRethrow.push("player" + i);
-                    scoresDictionary["player" + i] = 0;
-                }
-                else
-                {
-                    scoresDictionary["player" + i] = 1000;
-                }
-            }
-            
-        }*/
 
-        for(var i = 1; i <= playersToRethrow.length; i++) 
+        for(var i = 1; i < startingPlayerIndex; i++) 
+        {
+            if(lowestScores.includes("player" + i))
+            {
+                playersToRethrow.push("player" + i);
+                scoresDictionary["player" + i] = 0;
+            }
+            else
+            {
+                scoresDictionary["player" + i] = 1000;
+            }
+        }
+
+        for(var i = 0; i < playersToRethrow.length; i++) 
         {
             var number = getPlayerNumber(playersToRethrow[i]);
-            document.querySelector("#player" + number + "Score").classList.remove("lowest-score");
             await playerThrow(number);
         }
 
 
+
         lowestScores = determineLowestScore();
     }
-
+    }
 
 }   
 
