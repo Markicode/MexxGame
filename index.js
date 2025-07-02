@@ -207,7 +207,7 @@ function playerDrink(player)
     }
     else
     {
-        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink " + multiplier + " Times!</button>";
+        document.querySelector("#player" + number + "Button").innerHTML = "<button class=\"action-button\" id=\"player" + number + "DrinkButton\">Drink " + multiplier + " Times!</button>";
     }
 
     // When the drink button is clicked, the playerfield and the scorechart are reinitialized. and a new round is started with the losing player to start. 
