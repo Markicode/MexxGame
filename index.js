@@ -203,7 +203,7 @@ function playerDrink(player)
     // I a multiplier is active (bigger than 0), the drink button wil have a different text.
     if(multiplier === 0)
     {
-        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "DrinkButton\">Drink!</button>";
+        document.querySelector("#player" + number + "Button").innerHTML = "<button class=\"action-button\" id=\"player" + number + "DrinkButton\">Drink!</button>";
     }
     else
     {
@@ -231,7 +231,7 @@ async function playerThrow(number)
 {
     // The promise creates a throw button, adds an eventlistener and resolves all code in the eventhandler.
     return new Promise(resolve => {
-        document.querySelector("#player" + number + "Button").innerHTML = "<button id=\"player" + number + "Button\">Throw</button>";
+        document.querySelector("#player" + number + "Button").innerHTML = "<button class=\"action-button\" id=\"player" + number + "Button\">Throw</button>";
         document.querySelector("#player" + number + "Button").addEventListener("click", async function throwHandler() {
         document.querySelector("#player" + number + "Button").innerHTML = "throwing..";
 

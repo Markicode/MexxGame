@@ -28,6 +28,7 @@ h1 {
     padding: 1.5rem;
     padding-bottom: 2rem;
     margin: 0px;
+    margin-top: 1.5rem;
     text-align: center;
     text-shadow: 5px 5px 5px rgb(53, 53, 53);
     box-shadow: 5px 5px 5px rgb(53, 53, 53);
@@ -37,6 +38,28 @@ h1 {
     border: 5px solid white;
     padding: calc(1.5rem - 2px);
     padding-bottom: calc(2rem - 2px);
+    background-color: rgb(100, 100, 100, 0.3);
+}
+
+.action-button {
+    font-family: "Notable";
+    font-size: 1rem;
+    background: transparent;
+    border: 3px solid yellow;
+    border-radius: 10px;
+    color: yellow;
+    padding: 0.5rem;
+    padding-bottom: 1rem;
+    margin: 0px;
+    text-align: center;
+    text-shadow: 5px 5px 5px rgb(53, 53, 53);
+    box-shadow: 5px 5px 5px rgb(53, 53, 53);
+}
+
+.action-button:hover {
+    border: 5px solid yellow;
+    padding: calc(0.5rem - 2px);
+    padding-bottom: calc(1rem - 2px);
     background-color: rgb(100, 100, 100, 0.3);
 }
 
@@ -56,18 +79,74 @@ h1 {
     flex-wrap: wrap;
     justify-content: space-around;
     width: 100%;
+    font-size: 1.5rem;
 }
 
 .player {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     border: 3px solid white;
     border-radius: 10px;
-    width: 300px;
+    min-width: 300px;
     padding: 2rem;
     margin: 2rem;
 }
 
 .lowest-score {
     color: red;
+}
+
+
+
+@media (min-width: 1536px)
+{
+    body {
+        background-size: 100%;
+    }
+}
+
+@media (min-height: 1024px)
+{
+    body {
+        background-size: 100%;
+    }
+}
+
+@media (max-width: 600px)
+{
+    .player {
+    padding: 1rem;
+    margin: 1rem;
+    }
+
+    .players {
+    font-size: 1rem;
+    }
+
+    .die {
+        width: 75px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .button {
+    font-size: 1.5rem;
+    padding: 1rem;
+    padding-bottom: 1.25rem;
+    margin-top: 1rem;
+    }
+
+    .button:hover {
+    padding: calc(1rem - 2px);
+    padding-bottom: calc(1.25rem - 2px);
+    }
+
+}
+
+@media (max-width: 900px)
+{
+    
 }
